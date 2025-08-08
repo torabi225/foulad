@@ -4,13 +4,20 @@ import tensorflow as tf
 from PIL import Image, ImageOps
 import matplotlib.pyplot as plt
 import cv2
+import gdown
+url = 'https://drive.google.com/uc?export=download&id=1rrsq49sZPb8_JW75B10HouQ2QD9cGRmk'
+output = 'model.h5'
+gdown.download(url, output, quiet=False)
 
+# %%4
 # --- بارگذاری مدل ---
-model = tf.keras.models.load_model(
-    'G:/project/payan/dr.gandomi/foulad/foulad_model.h5',
-    compile=False
-)
-
+#model = tf.keras.models.load_model(
+#     'G:/project/payan/dr.gandomi/foulad/foulad_model.h5',
+#     compile=False
+# )
+from tensorflow.keras.models import load_model
+model = load_model('model.h5')
+# %%4
 # --- تابع پیش‌بینی ---
 def import_and_predict(image_data, model):
     size = (200, 200)
