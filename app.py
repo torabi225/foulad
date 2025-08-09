@@ -24,14 +24,14 @@ try:
     model_path = "model.h5"
 
     if not os.path.exists(model_path):
-        
+        st.info("در حال دانلود مدل از Google Drive ...")
         gdown.download(url, model_path, quiet=False)
     else:
-        st.error("برنامه در حال اجراست")
+        st.success("فایل مدل قبلاً دانلود شده است.")
 
     if os.path.exists(model_path):
         size_mb = os.path.getsize(model_path) / (1024 * 1024)
-        
+        st.write(f"✅ مدل موجود است — اندازه: {size_mb:.2f} MB")
 except Exception as e:
     st.error("❌ خطا در دانلود مدل:")
     st.text(type(e).__name__ + ": " + str(e))
@@ -40,10 +40,10 @@ except Exception as e:
 # --- بارگذاری مدل ---
 model = None
 try:
-    
-    
+    st.write("✅ TensorFlow نسخه:", tf.__version__)
+    st.info("در حال بارگذاری مدل...")
     model = tf.keras.models.load_model(model_path, custom_objects=custom_objects, compile=False)
-    #st.success("مدل با موفقیت لود شد.")
+    st.success("مدل با موفقیت لود شد.")
 except Exception as e:
     st.error("❌ خطا در بارگذاری مدل:")
     st.text(type(e).__name__ + ": " + str(e))
@@ -71,19 +71,11 @@ def make_gradcam_heatmap(img_array, model, last_conv_layer_name="block5_conv3", 
         grad_model = tf.keras.models.Model(
             [model.inputs], [model.get_layer(last_conv_layer_name).output, model.output]
         )
-
         with tf.GradientTape() as tape:
             conv_outputs, predictions = grad_model(img_array)
-
-            # ابعاد اضافی را حذف کن (مثلا از (1,1,6) به (1,6))
-            predictions = tf.squeeze(predictions)  # حالا shape احتمالا (6,) یا (batch_size, classes)
-
             if pred_index is None:
-                pred_index_tensor = tf.argmax(predictions, axis=-1)
-                pred_index = int(pred_index_tensor.numpy())
-
-            # اطمینان از اینکه predictions بعد کافی دارد
-            class_channel = predictions[pred_index]
+                pred_index = tf.argmax(predictions[0])
+            class_channel = predictions[0, pred_index]
 
         grads = tape.gradient(class_channel, conv_outputs)
         pooled_grads = tf.reduce_mean(grads, axis=(0, 1, 2))
@@ -94,15 +86,11 @@ def make_gradcam_heatmap(img_array, model, last_conv_layer_name="block5_conv3", 
         heatmap = tf.maximum(heatmap, 0) / tf.reduce_max(heatmap)
         heatmap = heatmap.numpy()
         return heatmap
-
     except Exception as e:
         st.error("❌ خطا در ساخت Grad-CAM:")
         st.text(type(e).__name__ + ": " + str(e))
         st.text(traceback.format_exc())
         return None
-
-
-
 
 # --- ترکیب heatmap با تصویر ---
 def overlay_heatmap(img, heatmap, alpha=0.4):
@@ -177,7 +165,6 @@ if file is not None:
         st.error("❌ مدل بارگذاری نشده است؛ پیش‌بینی ممکن نیست.")
 else:
     st.info("📎 لطفاً یک تصویر بارگذاری کنید.")
-
 
 
 
