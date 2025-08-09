@@ -19,7 +19,7 @@ custom_objects = {
 
 # --- دانلود مدل ---
 try:
-    file_id = "1rrsq49sZPb8_JW75B10HouQ2QD9cGRmk"
+    file_id = "1aGAUVtVOjBgYyCZ3hcj14U05MYFUYEAq"
     url = f"https://drive.google.com/uc?export=download&id={file_id}"
     model_path = "model.h5"
 
@@ -165,4 +165,5 @@ if file is not None:
         st.error("❌ مدل بارگذاری نشده است؛ پیش‌بینی ممکن نیست.")
 else:
     st.info("📎 لطفاً یک تصویر بارگذاری کنید.")
+
 
