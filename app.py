@@ -5,18 +5,43 @@ from PIL import Image, ImageOps
 import matplotlib.pyplot as plt
 import cv2
 import gdown
-url = 'https://drive.google.com/uc?export=download&id=1rrsq49sZPb8_JW75B10HouQ2QD9cGRmk'
-output = 'model.h5'
-gdown.download(url, output, quiet=False)
+import os
+import streamlit as st
 
-# %%4
-# --- بارگذاری مدل ---
-#model = tf.keras.models.load_model(
-#     'G:/project/payan/dr.gandomi/foulad/foulad_model.h5',
-#     compile=False
-# )
-from tensorflow.keras.models import load_model
-model = load_model('model.h5')
+# ابتدا دانلود مدل (اگر موجود نباشد)
+import gdown
+file_id = "1rrsq49sZPb8_JW75B10HouQ2QD9cGRmk"
+url = f"https://drive.google.com/uc?export=download&id={file_id}"
+model_path = "model.h5"
+
+if not os.path.exists(model_path):
+    st.info("در حال دانلود مدل از Google Drive ...")
+    gdown.download(url, model_path, quiet=False)
+else:
+    st.success("فایل مدل قبلاً دانلود شده است.")
+
+# نمایش اطلاعات فایل
+if os.path.exists(model_path):
+    size_mb = os.path.getsize(model_path) / (1024 * 1024)
+    st.write(f"✅ مدل موجود است — اندازه: {size_mb:.2f} MB")
+
+# حالا سعی می‌کنیم مدل را با کنترل خطا لود کنیم
+try:
+    import tensorflow as tf
+    st.write("✅ TensorFlow بارگذاری شد. نسخه:", tf.__version__)
+
+    # بارگذاری مدل داخل try
+    st.info("در حال بارگذاری مدل...")
+    model = tf.keras.models.load_model(model_path, compile=False)
+    st.success("مدل با موفقیت لود شد.")
+except Exception as e:
+    st.error("خطا در بارگذاری TensorFlow یا مدل:")
+    st.text(type(e).__name__ + ": " + str(e))
+    # برای عیب‌یابی مفید است خطا را نیز در لاگ چاپ کنیم
+    import traceback
+    traceback.print_exc()
+
+
 # %%4
 # --- تابع پیش‌بینی ---
 def import_and_predict(image_data, model):
@@ -131,3 +156,4 @@ if file is not None:
 
 else:
     st.info("📎 لطفاً یک تصویر بارگذاری کنید.")
+
