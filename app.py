@@ -98,6 +98,7 @@ def make_gradcam_heatmap(img_array, model, last_conv_layer_name="block5_conv3", 
         return None
 
 
+
 # --- ترکیب heatmap با تصویر ---
 def overlay_heatmap(img, heatmap, alpha=0.4):
     try:
@@ -171,6 +172,7 @@ if file is not None:
         st.error("❌ مدل بارگذاری نشده است؛ پیش‌بینی ممکن نیست.")
 else:
     st.info("📎 لطفاً یک تصویر بارگذاری کنید.")
+
 
 
 
