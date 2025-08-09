@@ -68,79 +68,45 @@ def import_and_predict(image_data, model):
 # --- Grad-CAM اصلاح شده ---
 def make_gradcam_heatmap(img_array, model, last_conv_layer_name="block5_conv3", pred_index=None):
     try:
-        try:
-            grad_model = tf.keras.models.Model(
-                [model.inputs], [model.get_layer(last_conv_layer_name).output, model.output]
-            )
-        except Exception as e:
-            st.error("❌ خطا در ایجاد مدل Grad-CAM:")
-            st.text(type(e).__name__ + ": " + str(e))
-            st.text(traceback.format_exc())
-            return None
+        grad_model = tf.keras.models.Model(
+            [model.inputs], [model.get_layer(last_conv_layer_name).output, model.output]
+        )
 
         with tf.GradientTape() as tape:
-            try:
-                conv_outputs, predictions = grad_model(img_array)
-            except Exception as e:
-                st.error("❌ خطا در اجرای مدل Grad-CAM برای دریافت خروجی‌ها:")
-                st.text(type(e).__name__ + ": " + str(e))
-                st.text(traceback.format_exc())
-                return None
+            conv_outputs, predictions = grad_model(img_array)
 
-            try:
-                if pred_index is None:
-                    pred_index = tf.argmax(predictions[0], axis=-1)
-                    pred_index = int(pred_index.numpy())
-                    
-            except Exception as e:
-                st.error("❌ خطا در تعیین شاخص پیش‌بینی (pred_index):")
-                st.text(type(e).__name__ + ": " + str(e))
-                st.text(traceback.format_exc())
-                return None
+            # اگر predictions لیست بود، آن را به تنسور تبدیل کن
+            if isinstance(predictions, list):
+                predictions = tf.convert_to_tensor(predictions)
 
-            try:
-                class_channel = predictions[0, pred_index]
+            # اطمینان از نوع تنسور و ابعاد
+            st.write(f"predictions type: {type(predictions)}")
+            st.write(f"predictions shape: {predictions.shape}")
 
-            except Exception as e:
-                st.error("❌ خطا در انتخاب کلاس پیش‌بینی‌شده:")
-                st.text(type(e).__name__ + ": " + str(e))
-                st.text(traceback.format_exc())
-                return None
+            if pred_index is None:
+                pred_index_tensor = tf.argmax(predictions[0], axis=-1)
+                pred_index = int(pred_index_tensor.numpy())
+                st.write(f"pred_index: {pred_index}")
 
-        try:
-            grads = tape.gradient(class_channel, conv_outputs)
-            pooled_grads = tf.reduce_mean(grads, axis=(0, 1, 2))
-        except Exception as e:
-            st.error("❌ خطا در محاسبه گرادیان‌ها:")
-            st.text(type(e).__name__ + ": " + str(e))
-            st.text(traceback.format_exc())
-            return None
+            # دسترسی به مقدار کلاس به صورت صحیح
+            class_channel = predictions[0][pred_index]
 
-        try:
-            conv_outputs = conv_outputs[0]
-            heatmap = conv_outputs @ pooled_grads[..., tf.newaxis]
-            heatmap = tf.squeeze(heatmap)
-        except Exception as e:
-            st.error("❌ خطا در ساخت نقشه گرمایی (heatmap):")
-            st.text(type(e).__name__ + ": " + str(e))
-            st.text(traceback.format_exc())
-            return None
+        grads = tape.gradient(class_channel, conv_outputs)
+        pooled_grads = tf.reduce_mean(grads, axis=(0, 1, 2))
+        conv_outputs = conv_outputs[0]
+        heatmap = conv_outputs @ pooled_grads[..., tf.newaxis]
+        heatmap = tf.squeeze(heatmap)
 
-        try:
-            heatmap = tf.maximum(heatmap, 0) / tf.reduce_max(heatmap)
-            heatmap = heatmap.numpy()
-            return heatmap
-        except Exception as e:
-            st.error("❌ خطا در نرمال‌سازی و تبدیل نقشه گرمایی:")
-            st.text(type(e).__name__ + ": " + str(e))
-            st.text(traceback.format_exc())
-            return None
+        heatmap = tf.maximum(heatmap, 0) / tf.reduce_max(heatmap)
+        heatmap = heatmap.numpy()
+        return heatmap
 
     except Exception as e:
-        st.error("❌ خطای غیرمنتظره در تابع make_gradcam_heatmap:")
+        st.error("❌ خطا در ساخت Grad-CAM:")
         st.text(type(e).__name__ + ": " + str(e))
         st.text(traceback.format_exc())
         return None
+
 
 
 
@@ -217,6 +183,7 @@ if file is not None:
         st.error("❌ مدل بارگذاری نشده است؛ پیش‌بینی ممکن نیست.")
 else:
     st.info("📎 لطفاً یک تصویر بارگذاری کنید.")
+
 
 
 
