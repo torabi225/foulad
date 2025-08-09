@@ -2,7 +2,6 @@ import numpy as np
 import streamlit as st
 import tensorflow as tf
 from PIL import Image, ImageOps
-import matplotlib.pyplot as plt
 import cv2
 import gdown
 import os
@@ -29,13 +28,21 @@ except Exception as e:
     st.text(traceback.format_exc())
 
 # --- بارگذاری مدل ---
+model = None
 try:
     st.write("✅ TensorFlow نسخه:", tf.__version__)
     st.info("در حال بارگذاری مدل...")
     model = tf.keras.models.load_model(model_path, compile=False)
     st.success("مدل با موفقیت لود شد.")
+except TypeError as e:
+    if "Unrecognized keyword arguments: ['batch_shape']" in str(e):
+        st.error("❌ خطا: ناسازگاری نسخه TensorFlow با مدل.\nلطفاً مدل را با نسخه فعلی TensorFlow مجدد ذخیره کنید.")
+    else:
+        st.error("❌ خطا در بارگذاری مدل:")
+        st.text(type(e).__name__ + ": " + str(e))
+        st.text(traceback.format_exc())
 except Exception as e:
-    st.error("❌ خطا در بارگذاری مدل:")
+    st.error("❌ خطای غیرمنتظره در بارگذاری مدل:")
     st.text(type(e).__name__ + ": " + str(e))
     st.text(traceback.format_exc())
 
@@ -115,40 +122,45 @@ st.markdown('<div class="subtitle">مدل مبتنی بر VGG16 با مکانی�
 file = st.file_uploader("📂 لطفاً تصویر عیب سطح فولاد را بارگذاری کنید", type=["jpg", "jpeg", "png"])
 
 if file is not None:
-    prediction, img_array, resized_image = import_and_predict(Image.open(file), model)
+    if model is not None:
+        prediction, img_array, resized_image = import_and_predict(Image.open(file), model)
 
-    if prediction is not None:
-        try:
-            class_labels = ['Crazing', 'Patches', 'Inclusion', 'Pitted_surface', 'Rolled-in_scale', 'Scratches']
-            pred_index = np.argmax(prediction)
-            pred_label = class_labels[pred_index]
-            confidence = prediction[0][pred_index]
+        if prediction is not None:
+            try:
+                class_labels = ['Crazing', 'Patches', 'Inclusion', 'Pitted_surface', 'Rolled-in_scale', 'Scratches']
+                pred_index = np.argmax(prediction)
+                pred_label = class_labels[pred_index]
+                confidence = prediction[0][pred_index]
 
-            st.markdown(f"<div class='result'>✅ نتیجه تشخیص: {pred_label} ({confidence*100:.2f}%)</div>", unsafe_allow_html=True)
+                st.markdown(f"<div class='result'>✅ نتیجه تشخیص: {pred_label} ({confidence*100:.2f}%)</div>", unsafe_allow_html=True)
 
-            col1, _, col2, _, col3 = st.columns([1.5, 0.7, 1.5, 0.7, 1.7])
+                col1, _, col2, _, col3 = st.columns([1.5, 0.7, 1.5, 0.7, 1.7])
 
-            with col1:
-                st.markdown("<div class='section-title'>📷 تصویر ورودی</div>", unsafe_allow_html=True)
-                st.image(resized_image, width=250)
+                with col1:
+                    st.markdown("<div class='section-title'>📷 تصویر ورودی</div>", unsafe_allow_html=True)
+                    st.image(resized_image, width=250)
 
-            with col2:
-                st.markdown("<div class='section-title'>🔥 نقشه توجه (Attention Map)</div>", unsafe_allow_html=True)
-                heatmap = make_gradcam_heatmap(img_array, model)
-                if heatmap is not None:
-                    original = np.uint8(255 * img_array[0])
-                    attention = overlay_heatmap(original, heatmap)
-                    if attention is not None:
-                        st.image(attention, width=250)
+                with col2:
+                    st.markdown("<div class='section-title'>🔥 نقشه توجه (Attention Map)</div>", unsafe_allow_html=True)
+                    heatmap = make_gradcam_heatmap(img_array, model)
+                    if heatmap is not None:
+                        original = np.uint8(255 * img_array[0])
+                        attention = overlay_heatmap(original, heatmap)
+                        if attention is not None:
+                            st.image(attention, width=250)
 
-            with col3:
-                st.markdown("<div class='section-title'>📊 احتمال هر کلاس</div>", unsafe_allow_html=True)
-                for i, label in enumerate(class_labels):
-                    st.markdown(f"<div class='label-text'>{label}: {prediction[0][i]:.4f}</div>", unsafe_allow_html=True)
-                    st.progress(float(prediction[0][i]))
-        except Exception as e:
-            st.error("❌ خطا در نمایش نتایج:")
-            st.text(type(e).__name__ + ": " + str(e))
-            st.text(traceback.format_exc())
+                with col3:
+                    st.markdown("<div class='section-title'>📊 احتمال هر کلاس</div>", unsafe_allow_html=True)
+                    for i, label in enumerate(class_labels):
+                        st.markdown(f"<div class='label-text'>{label}: {prediction[0][i]:.4f}</div>", unsafe_allow_html=True)
+                        st.progress(float(prediction[0][i]))
+            except Exception as e:
+                st.error("❌ خطا در نمایش نتایج:")
+                st.text(type(e).__name__ + ": " + str(e))
+                st.text(traceback.format_exc())
+    else:
+        st.error("❌ مدل بارگذاری نشده است؛ پیش‌بینی ممکن نیست.")
 else:
     st.info("📎 لطفاً یک تصویر بارگذاری کنید.")
+
+
