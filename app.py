@@ -1,27 +1,25 @@
 import numpy as np
 import streamlit as st
 import tensorflow as tf
-from tensorflow.keras.saving import register_keras_serializable
 from PIL import Image, ImageOps
 import cv2
 import gdown
 import os
 import traceback
 
-# --- تعریف توابع سفارشی مدل ---
-@register_keras_serializable()
-def rescale_gap(inputs):
-    gap_feat, gap_attn = inputs
-    return gap_feat / (gap_attn + 1e-7)
+# --- تعریف توابع سفارشی مدل (اگر دارید) ---
+def my_custom_lambda(x):
+    # تابع نمونه؛ تابع واقعی مدل خود را اینجا قرار دهید
+    return tf.nn.relu(x)
 
-# اگر توابع سفارشی دیگر دارید اینجا اضافه کنید
 custom_objects = {
-    'rescale_gap': rescale_gap,
+    'my_custom_lambda': my_custom_lambda,
+    # اگر توابع سفارشی دیگری دارید اینجا اضافه کنید
 }
 
 # --- دانلود مدل ---
 try:
-    file_id = "1LP94IpU-wjAbSL0KtNVHBQmiwz-b70tW"  # شناسه فایل گوگل درایو مدل شما
+    file_id = "1aGAUVtVOjBgYyCZ3hcj14U05MYFUYEAq"
     url = f"https://drive.google.com/uc?export=download&id={file_id}"
     model_path = "model.h5"
 
@@ -67,7 +65,7 @@ def import_and_predict(image_data, model):
         st.text(traceback.format_exc())
         return None, None, None
 
-# --- Grad-CAM ---
+# --- Grad-CAM اصلاح شده ---
 def make_gradcam_heatmap(img_array, model, last_conv_layer_name="block5_conv3", pred_index=None):
     try:
         grad_model = tf.keras.models.Model(
@@ -77,7 +75,7 @@ def make_gradcam_heatmap(img_array, model, last_conv_layer_name="block5_conv3", 
             conv_outputs, predictions = grad_model(img_array)
             if pred_index is None:
                 pred_index = tf.argmax(predictions[0])
-            class_channel = predictions[:, pred_index]
+            class_channel = predictions[0, pred_index]
 
         grads = tape.gradient(class_channel, conv_outputs)
         pooled_grads = tf.reduce_mean(grads, axis=(0, 1, 2))
@@ -123,7 +121,7 @@ st.markdown("""
 st.markdown('<div class="title">🔍 سامانه تشخیص عیوب سطح فولاد</div>', unsafe_allow_html=True)
 st.markdown('<div class="subtitle">مدل مبتنی بر VGG16 با مکانیزم توجه (Grad-CAM)</div>', unsafe_allow_html=True)
 
-# --- آپلود تصویر ---
+# --- آپلود ---
 file = st.file_uploader("📂 لطفاً تصویر عیب سطح فولاد را بارگذاری کنید", type=["jpg", "jpeg", "png"])
 
 if file is not None:
