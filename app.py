@@ -1,26 +1,27 @@
 import numpy as np
 import streamlit as st
 import tensorflow as tf
+from tensorflow.keras.saving import register_keras_serializable
 from PIL import Image, ImageOps
 import cv2
 import gdown
 import os
 import traceback
 
-# --- تعریف توابع سفارشی مدل (مثال) ---
-# جایگزین تابع زیر با تابع واقعی Lambda در مدل‌تان کنید:
+# --- تعریف توابع سفارشی مدل ---
+@register_keras_serializable()
 def rescale_gap(inputs):
     gap_feat, gap_attn = inputs
     return gap_feat / (gap_attn + 1e-7)
 
+# اگر توابع سفارشی دیگر دارید اینجا اضافه کنید
 custom_objects = {
-    'RescaleGAP': tf.keras.layers.Lambda(rescale_gap).function if hasattr(tf.keras.layers.Lambda(rescale_gap), 'function') else rescale_gap,
-    # اگر توابع Lambda یا دیگر سفارشی دارید اینجا اضافه کنید
+    'rescale_gap': rescale_gap,
 }
 
 # --- دانلود مدل ---
 try:
-    file_id = "1aGAUVtVOjBgYyCZ3hcj14U05MYFUYEAq"  # لینک مدل خود را اینجا قرار دهید
+    file_id = "1aGAUVtVOjBgYyCZ3hcj14U05MYFUYEAq"  # شناسه فایل گوگل درایو مدل شما
     url = f"https://drive.google.com/uc?export=download&id={file_id}"
     model_path = "model.h5"
 
@@ -122,7 +123,7 @@ st.markdown("""
 st.markdown('<div class="title">🔍 سامانه تشخیص عیوب سطح فولاد</div>', unsafe_allow_html=True)
 st.markdown('<div class="subtitle">مدل مبتنی بر VGG16 با مکانیزم توجه (Grad-CAM)</div>', unsafe_allow_html=True)
 
-# --- آپلود ---
+# --- آپلود تصویر ---
 file = st.file_uploader("📂 لطفاً تصویر عیب سطح فولاد را بارگذاری کنید", type=["jpg", "jpeg", "png"])
 
 if file is not None:
@@ -166,3 +167,4 @@ if file is not None:
         st.error("❌ مدل بارگذاری نشده است؛ پیش‌بینی ممکن نیست.")
 else:
     st.info("📎 لطفاً یک تصویر بارگذاری کنید.")
+
