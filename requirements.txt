@@ -1,11 +1,11 @@
-streamlit
-tensorflow-cpu
-numpy
-pillow
-matplotlib
-gdown
-scikit-learn
-seaborn
-opencv-python-headless
+streamlit==1.32.2
+tensorflow-cpu==2.15.0
+numpy==1.26.4
+pillow==10.2.0
+matplotlib==3.8.3
+gdown==4.7.1
+scikit-learn==1.4.1.post1
+seaborn==0.13.2
+opencv-python-headless==4.9.0.80
 
 
