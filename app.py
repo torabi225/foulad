@@ -8,18 +8,19 @@ import os
 import traceback
 
 # --- تعریف توابع سفارشی مدل (مثال) ---
-def my_custom_lambda(x):
-    # TODO: تابع اصلی که در مدل استفاده شده را اینجا قرار دهید
-    return tf.nn.relu(x)
+# جایگزین تابع زیر با تابع واقعی Lambda در مدل‌تان کنید:
+def rescale_gap(inputs):
+    gap_feat, gap_attn = inputs
+    return gap_feat / (gap_attn + 1e-7)
 
 custom_objects = {
-    'my_custom_lambda': my_custom_lambda,
-    # اگر توابع سفارشی دیگری دارید اینجا اضافه کنید
+    'RescaleGAP': tf.keras.layers.Lambda(rescale_gap).function if hasattr(tf.keras.layers.Lambda(rescale_gap), 'function') else rescale_gap,
+    # اگر توابع Lambda یا دیگر سفارشی دارید اینجا اضافه کنید
 }
 
 # --- دانلود مدل ---
 try:
-    file_id = "1aGAUVtVOjBgYyCZ3hcj14U05MYFUYEAq"
+    file_id = "1aGAUVtVOjBgYyCZ3hcj14U05MYFUYEAq"  # لینک مدل خود را اینجا قرار دهید
     url = f"https://drive.google.com/uc?export=download&id={file_id}"
     model_path = "model.h5"
 
@@ -165,5 +166,3 @@ if file is not None:
         st.error("❌ مدل بارگذاری نشده است؛ پیش‌بینی ممکن نیست.")
 else:
     st.info("📎 لطفاً یک تصویر بارگذاری کنید.")
-
-
