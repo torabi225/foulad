@@ -24,14 +24,14 @@ try:
     model_path = "model.h5"
 
     if not os.path.exists(model_path):
-        st.info("در حال دانلود مدل از Google Drive ...")
+        #st.info("در حال دانلود مدل از Google Drive ...")
         gdown.download(url, model_path, quiet=False)
     else:
-        st.success("فایل مدل قبلاً دانلود شده است.")
+        #st.success("فایل مدل قبلاً دانلود شده است.")
 
     if os.path.exists(model_path):
         size_mb = os.path.getsize(model_path) / (1024 * 1024)
-        st.write(f"✅ مدل موجود است — اندازه: {size_mb:.2f} MB")
+        #st.write(f"✅ مدل موجود است — اندازه: {size_mb:.2f} MB")
 except Exception as e:
     st.error("❌ خطا در دانلود مدل:")
     st.text(type(e).__name__ + ": " + str(e))
@@ -40,10 +40,10 @@ except Exception as e:
 # --- بارگذاری مدل ---
 model = None
 try:
-    st.write("✅ TensorFlow نسخه:", tf.__version__)
+    #st.write("✅ TensorFlow نسخه:", tf.__version__)
     st.info("در حال بارگذاری مدل...")
     model = tf.keras.models.load_model(model_path, custom_objects=custom_objects, compile=False)
-    st.success("مدل با موفقیت لود شد.")
+    #st.success("مدل با موفقیت لود شد.")
 except Exception as e:
     st.error("❌ خطا در بارگذاری مدل:")
     st.text(type(e).__name__ + ": " + str(e))
@@ -177,6 +177,7 @@ if file is not None:
         st.error("❌ مدل بارگذاری نشده است؛ پیش‌بینی ممکن نیست.")
 else:
     st.info("📎 لطفاً یک تصویر بارگذاری کنید.")
+
 
 
 
