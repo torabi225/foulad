@@ -7,5 +7,5 @@ gdown
 scikit-learn
 seaborn
 opencv-python-headless
-python-3.10
+
 
