@@ -27,7 +27,7 @@ try:
         
         gdown.download(url, model_path, quiet=False)
     else:
-        st.success("فایل مدل قبلاً دانلود شده است.")
+        
 
     if os.path.exists(model_path):
         size_mb = os.path.getsize(model_path) / (1024 * 1024)
@@ -40,8 +40,8 @@ except Exception as e:
 # --- بارگذاری مدل ---
 model = None
 try:
-    #st.write("✅ TensorFlow نسخه:", tf.__version__)
-    st.info("در حال بارگذاری مدل...")
+    
+    
     model = tf.keras.models.load_model(model_path, custom_objects=custom_objects, compile=False)
     #st.success("مدل با موفقیت لود شد.")
 except Exception as e:
@@ -177,6 +177,7 @@ if file is not None:
         st.error("❌ مدل بارگذاری نشده است؛ پیش‌بینی ممکن نیست.")
 else:
     st.info("📎 لطفاً یک تصویر بارگذاری کنید.")
+
 
 
 
