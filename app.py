@@ -27,7 +27,7 @@ try:
         
         gdown.download(url, model_path, quiet=False)
     else:
-        st.error("❌ خطا در دانلود مدل:")
+        st.error("برنامه در حال اجراست")
 
     if os.path.exists(model_path):
         size_mb = os.path.getsize(model_path) / (1024 * 1024)
@@ -177,6 +177,7 @@ if file is not None:
         st.error("❌ مدل بارگذاری نشده است؛ پیش‌بینی ممکن نیست.")
 else:
     st.info("📎 لطفاً یک تصویر بارگذاری کنید.")
+
 
 
 
