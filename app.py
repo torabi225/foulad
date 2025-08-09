@@ -7,6 +7,16 @@ import gdown
 import os
 import traceback
 
+# --- تعریف توابع سفارشی مدل (مثال) ---
+def my_custom_lambda(x):
+    # TODO: تابع اصلی که در مدل استفاده شده را اینجا قرار دهید
+    return tf.nn.relu(x)
+
+custom_objects = {
+    'my_custom_lambda': my_custom_lambda,
+    # اگر توابع سفارشی دیگری دارید اینجا اضافه کنید
+}
+
 # --- دانلود مدل ---
 try:
     file_id = "1rrsq49sZPb8_JW75B10HouQ2QD9cGRmk"
@@ -32,17 +42,10 @@ model = None
 try:
     st.write("✅ TensorFlow نسخه:", tf.__version__)
     st.info("در حال بارگذاری مدل...")
-    model = tf.keras.models.load_model(model_path, compile=False)
+    model = tf.keras.models.load_model(model_path, custom_objects=custom_objects, compile=False)
     st.success("مدل با موفقیت لود شد.")
-except TypeError as e:
-    if "Unrecognized keyword arguments: ['batch_shape']" in str(e):
-        st.error("❌ خطا: ناسازگاری نسخه TensorFlow با مدل.\nلطفاً مدل را با نسخه فعلی TensorFlow مجدد ذخیره کنید.")
-    else:
-        st.error("❌ خطا در بارگذاری مدل:")
-        st.text(type(e).__name__ + ": " + str(e))
-        st.text(traceback.format_exc())
 except Exception as e:
-    st.error("❌ خطای غیرمنتظره در بارگذاری مدل:")
+    st.error("❌ خطا در بارگذاری مدل:")
     st.text(type(e).__name__ + ": " + str(e))
     st.text(traceback.format_exc())
 
@@ -162,5 +165,4 @@ if file is not None:
         st.error("❌ مدل بارگذاری نشده است؛ پیش‌بینی ممکن نیست.")
 else:
     st.info("📎 لطفاً یک تصویر بارگذاری کنید.")
-
 
