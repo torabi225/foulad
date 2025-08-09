@@ -74,8 +74,11 @@ def make_gradcam_heatmap(img_array, model, last_conv_layer_name="block5_conv3", 
         with tf.GradientTape() as tape:
             conv_outputs, predictions = grad_model(img_array)
             if pred_index is None:
+                # انتخاب کلاس با بیشترین احتمال به صورت عدد صحیح
                 pred_index = tf.argmax(predictions[0])
-            # اینجا به جای استفاده از ایندکس دو بعدی، از این روش استفاده می کنیم:
+                # تبدیل تنسور به عدد صحیح پایتون
+                pred_index = int(pred_index.numpy())  # یا pred_index.numpy().item()
+
             class_channel = predictions[0][pred_index]
 
         grads = tape.gradient(class_channel, conv_outputs)
@@ -92,7 +95,6 @@ def make_gradcam_heatmap(img_array, model, last_conv_layer_name="block5_conv3", 
         st.text(type(e).__name__ + ": " + str(e))
         st.text(traceback.format_exc())
         return None
-
 
 # --- ترکیب heatmap با تصویر ---
 def overlay_heatmap(img, heatmap, alpha=0.4):
@@ -167,6 +169,7 @@ if file is not None:
         st.error("❌ مدل بارگذاری نشده است؛ پیش‌بینی ممکن نیست.")
 else:
     st.info("📎 لطفاً یک تصویر بارگذاری کنید.")
+
 
 
 
