@@ -90,10 +90,8 @@ def make_gradcam_heatmap(img_array, model, last_conv_layer_name="block5_conv3", 
             try:
                 if pred_index is None:
                     pred_index = tf.argmax(predictions[0], axis=-1)
-                    if isinstance(pred_index, tf.Tensor):
-                        pred_index = pred_index.numpy()
-                    if isinstance(pred_index, (np.ndarray, list)):
-                        pred_index = pred_index.item()
+                    pred_index = int(pred_index.numpy())
+                    
             except Exception as e:
                 st.error("❌ خطا در تعیین شاخص پیش‌بینی (pred_index):")
                 st.text(type(e).__name__ + ": " + str(e))
@@ -101,7 +99,8 @@ def make_gradcam_heatmap(img_array, model, last_conv_layer_name="block5_conv3", 
                 return None
 
             try:
-                class_channel = predictions[0][pred_index]
+                class_channel = predictions[0, pred_index]
+
             except Exception as e:
                 st.error("❌ خطا در انتخاب کلاس پیش‌بینی‌شده:")
                 st.text(type(e).__name__ + ": " + str(e))
@@ -218,6 +217,7 @@ if file is not None:
         st.error("❌ مدل بارگذاری نشده است؛ پیش‌بینی ممکن نیست.")
 else:
     st.info("📎 لطفاً یک تصویر بارگذاری کنید.")
+
 
 
 
