@@ -73,11 +73,19 @@ def make_gradcam_heatmap(img_array, model, last_conv_layer_name="block5_conv3", 
         grad_model = tf.keras.models.Model(
             [model.inputs], [model.get_layer(last_conv_layer_name).output, model.output]
         )
+
         with tf.GradientTape() as tape:
             conv_outputs, predictions = grad_model(img_array)
+
+            # ابعاد اضافی را حذف کن (مثلا از (1,1,6) به (1,6))
+            predictions = tf.squeeze(predictions)  # حالا shape احتمالا (6,) یا (batch_size, classes)
+
             if pred_index is None:
-                pred_index = tf.argmax(predictions[0])
-            class_channel = predictions[:, pred_index]
+                pred_index_tensor = tf.argmax(predictions, axis=-1)
+                pred_index = int(pred_index_tensor.numpy())
+
+            # اطمینان از اینکه predictions بعد کافی دارد
+            class_channel = predictions[pred_index]
 
         grads = tape.gradient(class_channel, conv_outputs)
         pooled_grads = tf.reduce_mean(grads, axis=(0, 1, 2))
@@ -88,11 +96,13 @@ def make_gradcam_heatmap(img_array, model, last_conv_layer_name="block5_conv3", 
         heatmap = tf.maximum(heatmap, 0) / tf.reduce_max(heatmap)
         heatmap = heatmap.numpy()
         return heatmap
+
     except Exception as e:
         st.error("❌ خطا در ساخت Grad-CAM:")
         st.text(type(e).__name__ + ": " + str(e))
         st.text(traceback.format_exc())
         return None
+
 
 # --- ترکیب heatmap با تصویر ---
 def overlay_heatmap(img, heatmap, alpha=0.4):
@@ -167,4 +177,5 @@ if file is not None:
         st.error("❌ مدل بارگذاری نشده است؛ پیش‌بینی ممکن نیست.")
 else:
     st.info("📎 لطفاً یک تصویر بارگذاری کنید.")
+
 
