@@ -75,21 +75,15 @@ def make_gradcam_heatmap(img_array, model, last_conv_layer_name="block5_conv3", 
         with tf.GradientTape() as tape:
             conv_outputs, predictions = grad_model(img_array)
 
-            # اگر predictions لیست بود، آن را به تنسور تبدیل کن
-            if isinstance(predictions, list):
-                predictions = tf.convert_to_tensor(predictions)
-
-            # اطمینان از نوع تنسور و ابعاد
-            st.write(f"predictions type: {type(predictions)}")
-            st.write(f"predictions shape: {predictions.shape}")
+            # ابعاد اضافی را حذف کن (مثلا از (1,1,6) به (1,6))
+            predictions = tf.squeeze(predictions)  # حالا shape احتمالا (6,) یا (batch_size, classes)
 
             if pred_index is None:
-                pred_index_tensor = tf.argmax(predictions[0], axis=-1)
+                pred_index_tensor = tf.argmax(predictions, axis=-1)
                 pred_index = int(pred_index_tensor.numpy())
-                st.write(f"pred_index: {pred_index}")
 
-            # دسترسی به مقدار کلاس به صورت صحیح
-            class_channel = predictions[0][pred_index]
+            # اطمینان از اینکه predictions بعد کافی دارد
+            class_channel = predictions[pred_index]
 
         grads = tape.gradient(class_channel, conv_outputs)
         pooled_grads = tf.reduce_mean(grads, axis=(0, 1, 2))
@@ -183,6 +177,7 @@ if file is not None:
         st.error("❌ مدل بارگذاری نشده است؛ پیش‌بینی ممکن نیست.")
 else:
     st.info("📎 لطفاً یک تصویر بارگذاری کنید.")
+
 
 
 
