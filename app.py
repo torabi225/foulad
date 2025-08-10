@@ -143,7 +143,7 @@ if file is not None:
 
         if prediction is not None:
             try:
-                class_labels = ['Crazing', 'Patches', 'Inclusion', 'Pitted_surface', 'Rolled-in_scale', 'Scratches']
+                class_labels = ['Crazing', 'Inclusion', 'Patches', 'Pitted_surface', 'Rolled-in_scale', 'Scratches']
                 pred_index = np.argmax(prediction)
                 pred_label = class_labels[pred_index]
                 confidence = prediction[0][pred_index]
@@ -178,6 +178,7 @@ if file is not None:
         st.error("❌ مدل بارگذاری نشده است؛ پیش‌بینی ممکن نیست.")
 else:
     st.info("📎 لطفاً یک تصویر بارگذاری کنید.")
+
 
 
 
