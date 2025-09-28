@@ -19,7 +19,7 @@ custom_objects = {
     'rescale_gap': rescale_gap,
 }
 
-# --- دانلود مدل ---
+
 try:
     file_id = "1HqyEY_5PIocLmJ2MzidLPltpA88An8L7"  # 
     url = f"https://drive.google.com/uc?export=download&id={file_id}"
@@ -177,6 +177,7 @@ if file is not None:
         st.error("❌ مدل بارگذاری نشده است؛ پیش‌بینی ممکن نیست.")
 else:
     st.info("📎 لطفاً یک تصویر بارگذاری کنید.")
+
 
 
 
