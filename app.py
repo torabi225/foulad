@@ -8,20 +8,20 @@ import gdown
 import os
 import traceback
 
-# --- تعریف توابع سفارشی مدل ---
+
 @register_keras_serializable()
 def rescale_gap(inputs):
     gap_feat, gap_attn = inputs
     return gap_feat / (gap_attn + 1e-7)
 
-# اگر توابع سفارشی دیگر دارید اینجا اضافه کنید
+
 custom_objects = {
     'rescale_gap': rescale_gap,
 }
 
 # --- دانلود مدل ---
 try:
-    file_id = "1HqyEY_5PIocLmJ2MzidLPltpA88An8L7"  # شناسه فایل گوگل درایو مدل شما
+    file_id = "1HqyEY_5PIocLmJ2MzidLPltpA88An8L7"  # 
     url = f"https://drive.google.com/uc?export=download&id={file_id}"
     model_path = "model.h5"
 
@@ -39,7 +39,7 @@ except Exception as e:
     st.text(type(e).__name__ + ": " + str(e))
     st.text(traceback.format_exc())
 
-# --- بارگذاری مدل ---
+
 model = None
 try:
     
@@ -51,7 +51,7 @@ except Exception as e:
     st.text(type(e).__name__ + ": " + str(e))
     st.text(traceback.format_exc())
 
-# --- تابع پیش‌بینی ---
+
 def import_and_predict(image_data, model):
     try:
         size = (200, 200)
@@ -67,7 +67,7 @@ def import_and_predict(image_data, model):
         st.text(traceback.format_exc())
         return None, None, None
 
-# --- Grad-CAM ---
+
 def make_gradcam_heatmap(img_array, model, last_conv_layer_name="block5_conv3", pred_index=None):
     try:
         grad_model = tf.keras.models.Model(
@@ -77,14 +77,13 @@ def make_gradcam_heatmap(img_array, model, last_conv_layer_name="block5_conv3", 
         with tf.GradientTape() as tape:
             conv_outputs, predictions = grad_model(img_array)
 
-            # ابعاد اضافی را حذف کن (مثلا از (1,1,6) به (1,6))
-            predictions = tf.squeeze(predictions)  # حالا shape احتمالا (6,) یا (batch_size, classes)
+            predictions = tf.squeeze(predictions)  
 
             if pred_index is None:
                 pred_index_tensor = tf.argmax(predictions, axis=-1)
                 pred_index = int(pred_index_tensor.numpy())
 
-            # اطمینان از اینکه predictions بعد کافی دارد
+           
             class_channel = predictions[pred_index]
 
         grads = tape.gradient(class_channel, conv_outputs)
@@ -105,7 +104,7 @@ def make_gradcam_heatmap(img_array, model, last_conv_layer_name="block5_conv3", 
 
 
 
-# --- ترکیب heatmap با تصویر ---
+
 def overlay_heatmap(img, heatmap, alpha=0.4):
     try:
         heatmap = cv2.resize(heatmap, (img.shape[1], img.shape[0]))
@@ -119,7 +118,7 @@ def overlay_heatmap(img, heatmap, alpha=0.4):
         st.text(traceback.format_exc())
         return None
 
-# --- CSS ---
+
 st.markdown("""
     <style>
         .title {font-size: 36px; font-weight: bold; text-align: center; color: #1f77b4;}
@@ -130,11 +129,11 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# --- عنوان ---
+
 st.markdown('<div class="title">🔍 سامانه تشخیص عیوب سطح فولاد</div>', unsafe_allow_html=True)
 st.markdown('<div class="subtitle">مدل مبتنی بر VGG16 با مکانیزم توجه (Grad-CAM)</div>', unsafe_allow_html=True)
 
-# --- آپلود تصویر ---
+
 file = st.file_uploader("📂 لطفاً تصویر عیب سطح فولاد را بارگذاری کنید", type=["jpg", "jpeg", "png"])
 
 if file is not None:
@@ -178,6 +177,7 @@ if file is not None:
         st.error("❌ مدل بارگذاری نشده است؛ پیش‌بینی ممکن نیست.")
 else:
     st.info("📎 لطفاً یک تصویر بارگذاری کنید.")
+
 
 
 
